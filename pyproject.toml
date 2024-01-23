@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "dummy-bot"
+version = "0.1.0"
+description = ""
+authors = ["palich <rautaruukkipalich@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = "^3.3.0"
+sqlalchemy = "^2.0.25"
+python-dotenv = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
