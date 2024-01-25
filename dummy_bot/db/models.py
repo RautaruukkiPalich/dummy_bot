@@ -16,20 +16,6 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 Base = declarative_base()
 
 
-# class Pokak(Base):
-#     __tablename__ = 'pokaks'
-#
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-#     user_id: Mapped[int] = relationship(ForeignKey("users.id"))
-#     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-#
-#     user: Mapped["User"] = relationship("User", back_populates="pokak")
-#
-#     __table_args__ = (
-#         PrimaryKeyConstraint('id', name='pokak_id'),
-#     )
-
-
 class Group(Base):
     __tablename__ = 'groups'
 
@@ -37,9 +23,6 @@ class Group(Base):
     group_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     created_on: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_on: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
-
-    # media = relationship("Media", back_populates="group")
-    # user = relationship("User", back_populates="group")
 
     __table_args__ = (
         PrimaryKeyConstraint('id', name='group_id'),
@@ -49,13 +32,12 @@ class Group(Base):
 class Media(Base):
     __tablename__ = 'medias'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    group_id = Column(Integer, ForeignKey("groups.id"))
-    media_unique_id = Column(String(250), default="")
-    created_at = Column(DateTime(), default=datetime.now)
-    updated_at = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
-
-    group = relationship("Group", back_populates="media")
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
+    group: Mapped["Group"] = relationship(foreign_keys=[group_id])
+    media_unique_id: Mapped[str] = mapped_column(nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now, onupdate=datetime.now)
 
     __table_args__ = (
         PrimaryKeyConstraint('id', name='media_id'),
@@ -65,16 +47,15 @@ class Media(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    chat_id = Column(String(30), nullable=False)
-    group_id = Column(Integer, ForeignKey("groups.id"))
-    username = Column(String(250), default="", nullable=False)
-    full_name = Column(String(250), default=" ")
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(), default=datetime.now)
-    updated_at = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
-
-    pokak = relationship("Pokak", back_populates="user")
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    chat_id: Mapped[str] = mapped_column(nullable=False)
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
+    group: Mapped["Group"] = relationship(foreign_keys=[group_id])
+    username: Mapped[str | None] = mapped_column(default="", nullable=True)
+    fullname: Mapped[str] = mapped_column(default=" ", nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now, onupdate=datetime.now)
 
     __table_args__ = (
         PrimaryKeyConstraint('id', name='user_id'),
@@ -85,11 +66,10 @@ class User(Base):
 class Pokak(Base):
     __tablename__ = 'pokaks'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(), default=datetime.now)
-
-    user = relationship("User", back_populates="pokak")
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped["User"] = relationship(foreign_keys=[user_id])
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
 
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pokak_id'),
