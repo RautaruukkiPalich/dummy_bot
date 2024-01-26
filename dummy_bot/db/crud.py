@@ -1,7 +1,12 @@
-from sqlalchemy import select, update
+from typing import List
+
+from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from datetime import datetime as dt
 
 from dummy_bot.db.models import Group, User, Media, Pokak
+from dummy_bot.db.schemas import PokakStatDTO
 
 
 async def get_group(group_id: str, session: AsyncSession):
@@ -36,8 +41,10 @@ async def get_user(group: Group, chat_id: str, session: AsyncSession):
         select(
             User
         ).filter(
-            User.group_id == group.id,
-            User.chat_id == chat_id,
+            and_(
+                User.group_id == group.id,
+                User.chat_id == chat_id,
+            )
         )
     )
     return user.scalars().first()
@@ -93,8 +100,10 @@ async def delete_user(group_id: str, chat_id: str, session: AsyncSession):
         update(
             User
         ).where(
-            User.group_id == group.id,
-            User.chat_id == chat_id,
+            and_(
+                User.group_id == group.id,
+                User.chat_id == chat_id,
+            )
         ).values(
             is_active=False
         )
@@ -167,3 +176,27 @@ async def create_pokak(user: User, session: AsyncSession):
     await session.commit()
     await session.refresh(pokak)
     return pokak
+
+
+async def get_pokak_stat(group_id: str, start: dt, end: dt, session: AsyncSession) -> List[PokakStatDTO]:
+    group = await get_or_create_group(group_id, session)
+    stmt = (
+        select(
+            Pokak
+        )
+        .select_from(Pokak)
+        .join(User)
+        .options(selectinload(Pokak.user))
+        .filter(
+            and_(
+                Pokak.created_at < end,
+                Pokak.created_at > start,
+                User.group_id == group.id,
+                User.is_active.is_(True),
+            )
+        )
+    )
+    # print(stmt.compile(compile_kwargs={"literal_binds": True}))
+    pokaks = await session.execute(stmt)
+    result = pokaks.scalars().all()
+    return [PokakStatDTO.model_validate(row, from_attributes=True) for row in result]
