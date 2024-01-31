@@ -1,14 +1,9 @@
-alembic revision --autogenerate -m "initial_commit"  
-alembic upgrade head
-
-
-
 Starting the app:
 1) install Git, Docker, Docker-compose and all docker requirements
 
 2) clone repo
    ```commandline
-   git clone https://github.com/RautaruukkiPalich/****
+   git clone https://github.com/RautaruukkiPalich/dummy_bot
    ```
 3) create .env file in . with parameters
     ```bash
@@ -22,7 +17,10 @@ Starting the app:
    
     PGADMIN_DEFAULT_EMAIL= #enter pgadmin email
     PGADMIN_DEFAULT_PASSWORD= #enter pgadmin password
-    ```
+    
+    REDIS_HOST= redis
+    REDIS_PORT= #enter redis port
+   ```
 4) use command to create and start containers
     ```commandline
     IDE: docker-compose up -d --build
