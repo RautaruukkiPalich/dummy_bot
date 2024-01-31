@@ -5,9 +5,9 @@ services:
     container_name: postgres_container
     image: postgres
     environment:
-      POSTGRES_DB: ${DB_NAME:-postgres}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+      POSTGRES_DB: "${DB_NAME:-postgres}"
+      POSTGRES_USER: "${DB_USER:-postgres}"
+      POSTGRES_PASSWORD: "${DB_PASS:-postgres}"
     ports:
       - "${DB_PORT:-5432}:5432"
     restart: always
@@ -34,6 +34,15 @@ services:
     networks:
       - postgres
 
+  redis:
+    container_name: redis_container
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: always
+    networks:
+      - postgres
+
   bot:
     container_name: bot_container
     build: .
@@ -43,17 +52,22 @@ services:
       DB_USER: "${DB_USER:-change_me}"
       DB_PASS: "${DB_PASS:-change_me}"
       DB_NAME: "${DB_NAME:-change_me}"
+      REDIS_HOST: "${REDIS_HOST:-change_me}"
     ports:
       - "443:443"
 #    volumes:
 #      - . :/usr/src
     restart: always
+    depends_on:
+      - database
+      - redis
     networks:
       - postgres
 
 volumes:
     postgres:
     pgadmin:
+    redis:
     bot:
 
 networks:
