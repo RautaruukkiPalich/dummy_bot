@@ -4,7 +4,12 @@ import sys
 from aiogram import Dispatcher, Bot
 from aiogram.enums import ParseMode
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    create_async_engine,
+    async_sessionmaker,
+    AsyncSession,
+)
 
 from config import TOKEN, DB_URL
 from dummy_bot.bot.handlers import router
