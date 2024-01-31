@@ -3,9 +3,6 @@ from typing import List
 from aiogram import types, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    User,
-)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.bot.fsm import SetMedia
@@ -53,9 +50,9 @@ async def stats(message: types.Message, session: AsyncSession) -> None:
 
 
 @router.message(Command(commands=["setpokakmedia"]))
-async def set_media(message: types.Message, admins: List[User], session: AsyncSession, state: FSMContext) -> None:
+async def set_media(message: types.Message, admins: List[int], session: AsyncSession, state: FSMContext) -> None:
     if not await is_admin(message, admins):
-        await message.reply(text=f'You cant do that')
+        await message.reply(text='У тебя нет прав назначать медиафайл')
         await text(message, session)
         return
 
@@ -65,9 +62,9 @@ async def set_media(message: types.Message, admins: List[User], session: AsyncSe
 
 
 @router.message(SetMedia.get_media)
-async def callback_set_media(message: types.Message, admins: List[User], session: AsyncSession, state: FSMContext) -> None:
+async def callback_set_media(message: types.Message, admins: List[int], session: AsyncSession, state: FSMContext) -> None:
     if not await is_admin(message, admins):
-        await message.reply(text=f'You cant do that')
+        await message.reply(text='У тебя нет прав назначать медиафайл')
         await text(message, session)
         return
 
@@ -141,7 +138,7 @@ async def text(message: types.Message, session: AsyncSession) -> any:
             chat_id=str(message.from_user.id),
             session=session,
         )
-        if not user.is_active:
+        if not user or not user.is_active:
             return
 
         await create_pokak(user, session)
