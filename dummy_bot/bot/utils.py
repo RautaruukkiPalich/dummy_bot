@@ -6,9 +6,9 @@ from datetime import datetime as dt, timedelta
 from dummy_bot.db.schemas import PokakStatDTO
 
 
-async def is_admin(message: Message, admins: List[User]) -> bool:
+async def is_admin(message: Message, admins: List[int]) -> bool:
     if not message.chat.id == message.from_user.id:
-        if message.from_user.id not in [x.id for x in admins]:
+        if message.from_user.id not in admins:
             return False
     return True
 
