@@ -17,6 +17,7 @@ Starting the app:
    
     PGADMIN_DEFAULT_EMAIL= #enter pgadmin email
     PGADMIN_DEFAULT_PASSWORD= #enter pgadmin password
+    PGADMIN_PORT= #enter pgadmin port
     
     REDIS_HOST= redis
     REDIS_PORT= #enter redis port
