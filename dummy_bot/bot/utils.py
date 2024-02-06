@@ -1,7 +1,8 @@
 from typing import List, Tuple
-from aiogram.types import User, Message
+from aiogram.types import Message
 
 from datetime import datetime as dt, timedelta
+from calendar import monthrange
 
 from dummy_bot.db.schemas import PokakStatDTO
 
@@ -22,18 +23,33 @@ async def get_file_unique_id(message: Message) -> str | None:
 
 
 async def get_start_end_period(period: str) -> Tuple[dt, dt]:
+    now = dt.now()
+
     match period:
         case "all":
-            return dt(1970, 1, 1), dt.now()
+            return dt(1970, 1, 1), now
+
         case "year":
-            year = dt.now().year
-            return dt(year, 1, 1), dt(year, 12, 31)
+            return dt(now.year, 1, 1), dt(now.year, 12, 31)
+
         case "month":
-            now = dt.now()
-            return now - timedelta(days=30), now
+            start_month_date = dt(
+                year=now.year, month=now.month, day=1,
+                hour=0, minute=0, second=0, microsecond=0,
+            )
+            end_month_date = start_month_date + timedelta(
+                days=monthrange(now.year, now.month)[1]
+            )
+            return start_month_date, end_month_date
+
         case "week":
-            now = dt.now()
-            return now - timedelta(days=7), now
+            start_week = now - timedelta(now.weekday())
+            start_week_date = dt(
+                year=start_week.year, month=start_week.month, day=start_week.day,
+                hour=0, minute=0, second=0, microsecond=0,
+            )
+            end_week_date = start_week_date + timedelta(days=7)
+            return start_week_date, end_week_date
 
 
 # TODO: await API method setReaction
@@ -63,7 +79,7 @@ async def parse_pair(num: int, pair: tuple) -> str:
 async def create_report(data: List[PokakStatDTO], period: str) -> str:
     match period:
         case "week":
-            head = "Топ-10 засранцев текущей неделю:\n"
+            head = "Топ-10 засранцев текущей недели:\n"
         case "month":
             head = "Топ-10 засранцев текущего месяца:\n"
         case "year":
