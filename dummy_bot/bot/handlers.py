@@ -184,7 +184,7 @@ class Service:
                 return
 
             await self._pokak_repo.add(session, user)
-            await message.react([types.ReactionTypeEmoji(emoji="👍")])
+            await message.react([types.ReactionTypeEmoji(emoji="👌")])
 
     @staticmethod
     def _get_user_name(user: User) -> str:
