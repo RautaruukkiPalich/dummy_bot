@@ -8,8 +8,8 @@ services:
       POSTGRES_DB: "${DB_NAME:-postgres}"
       POSTGRES_USER: "${DB_USER:-postgres}"
       POSTGRES_PASSWORD: "${DB_PASS:-postgres}"
-    ports:
-      - "${DB_PORT:-5432}:5432"
+    expose:
+      - "5432"
     restart: always
     volumes:
       - postgres:/data/postgres
@@ -37,8 +37,8 @@ services:
   redis:
     container_name: redis_container_dummy_bot
     image: redis:7-alpine
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    expose:
+      - "6379"
     restart: always
     networks:
       - postgres
