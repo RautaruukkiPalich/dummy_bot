@@ -57,6 +57,12 @@ class User(Base):
         UniqueConstraint("chat_id", "group_id", name="chat_in_group"),
     )
 
+    def activate(self) -> None:
+        self.is_active = True
+
+    def deactivate(self) -> None:
+        self.is_active = False
+
 
 class Pokak(Base):
     __tablename__ = 'pokaks'
