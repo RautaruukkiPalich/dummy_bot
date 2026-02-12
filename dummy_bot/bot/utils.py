@@ -1,8 +1,9 @@
+import re
 from calendar import monthrange
 from collections import defaultdict
 from enum import Enum
-from typing import Tuple, List
-from datetime import datetime as dt, timedelta
+from typing import Tuple, List, Callable, Dict, Union
+from datetime import datetime as dt, timedelta as td
 
 from aiogram.types import Message
 
@@ -57,13 +58,13 @@ class PeriodEnum(Enum):
                 return start, end
 
             case PeriodEnum.WEEK:
-                start_week = now - timedelta(days=now.weekday())
+                start_week = now - td(days=now.weekday())
                 start = dt(
                     year=start_week.year,
                     month=start_week.month,
                     day=start_week.day,
                 )
-                end = start + timedelta(days=7)
+                end = start + td(days=7)
                 return start, end
 
     def __str__(self) -> str:
@@ -130,6 +131,96 @@ class Report:
 
     def __str__(self) -> str:
         return f"Creating report for {self.period}"
+
+
+class TimeHelper:
+    @staticmethod
+    def parse_str_to_duration(raw: str) -> td | None:
+        units = {
+            's': 'seconds',
+            'm': 'minutes',
+            'h': 'hours',
+            'd': 'days',
+        }
+
+        match = re.match(r'^(\d+)([smhd])$', raw.lower().strip())
+        if not match:
+            print(f"Неверный формат: {raw}")
+            return None
+
+        value, unit = match.groups()
+        return td(**{units[unit]: int(value)})
+
+    @staticmethod
+    def format_timedelta(delta: td) -> str:
+        forms = {
+            'seconds': ('секунду', 'секунды', 'секунд'),
+            'minutes': ('минуту', 'минуты', 'минут'),
+            'hours': ('час', 'часа', 'часов'),
+            'days': ('день', 'дня', 'дней'),
+            'weeks': ('неделю', 'недели', 'недель'),
+            'months': ('месяц', 'месяца', 'месяцев'),
+            'years': ('год', 'года', 'лет'),
+        }
+
+        return TimeHelper._format_time(
+            delta.total_seconds(),
+            TimeHelper._plural,
+            forms,
+        )
+
+
+    @staticmethod
+    def _plural(number: int, forms: Tuple) -> str:
+        number = abs(number)
+        if number % 10 == 1 and number % 100 != 11:
+            return forms[0]
+        elif 2 <= number % 10 <= 4 and (number % 100 < 10 or number % 100 >= 20):
+            return forms[1]
+        else:
+            return forms[2]
+
+    @staticmethod
+    def _format_time(
+            delta: Union[td, int, float],
+            plural_func: Callable[[int, Tuple[str, ...]], str],
+            forms: Dict[str, Tuple[str, ...]]
+    ) -> str:
+        if isinstance(delta, (int, float)):
+            delta = td(seconds=delta)
+
+        total_seconds = int(delta.total_seconds())
+
+        if total_seconds < 60:
+            value = total_seconds
+            unit = plural_func(value, forms['seconds'])
+            return f"{value} {unit}"
+
+        elif total_seconds < 3600:
+            value = total_seconds // 60
+            unit = plural_func(value, forms['minutes'])
+            return f"{value} {unit}"
+
+        elif total_seconds < 86400:
+            value = total_seconds // 3600
+            unit = plural_func(value, forms['hours'])
+            return f"{value} {unit}"
+
+        elif total_seconds < 604800:  # 7 дней
+            value = total_seconds // 86400
+            unit = plural_func(value, forms['days'])
+            return f"{value} {unit}"
+
+        elif total_seconds < 2592000:  # 30 дней (примерно месяц)
+            value = total_seconds // 604800
+            unit = plural_func(value, forms['weeks'])
+            return f"{value} {unit}"
+
+        else:
+            value = total_seconds // 2592000  # 30 дней
+            unit = plural_func(value, forms['months'])
+            return f"{value} {unit}"
+
 
 
 async def is_admin(message: Message, admins: List[int]) -> bool:

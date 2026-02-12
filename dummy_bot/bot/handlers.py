@@ -1,7 +1,8 @@
 import functools
+from datetime import datetime as dt
 from typing import List
 
-from aiogram import types, Router
+from aiogram import types, Router, F, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,7 @@ from dummy_bot.bot.utils import (
     CommandStatEnum,
     PeriodEnum,
     Report,
+    TimeHelper,
 )
 from dummy_bot.bot.interfaces import IGroupRepo, IUserRepo, IMediaRepo, IPokakRepo
 from dummy_bot.db.models import User
@@ -72,7 +74,8 @@ class Service:
             await message.answer(text=report_text, parse_mode="HTML")
 
         @self._router.message(Command(commands=["setpokakmedia"]))
-        async def set_media(message: types.Message, admins: List[int], session: AsyncSession, state: FSMContext) -> None:
+        async def set_media(message: types.Message, admins: List[int], session: AsyncSession,
+                            state: FSMContext) -> None:
             if not await is_admin(message, admins):
                 await message.reply(text='У тебя нет прав назначать медиафайл')
                 return
@@ -156,6 +159,59 @@ class Service:
                 raise AttributeError("cant update user")
 
             await message.reply(text=f'{self._get_user_name(user)}, чтоб тебя запоры мучали')
+
+        @self._router.message(F.text.startswith("!w "))
+        async def mute(message: types.Message, admins: List[int], bot: Bot) -> None:
+            if not message.reply_to_message:
+                await message.reply("command should be reply to message")
+                return
+
+            user_id = message.from_user.id
+            if user_id not in admins:
+                return
+
+            # поулчаем данные о пользователе, которого нужно замутить
+            muted_user = message.reply_to_message.from_user
+            if not muted_user:
+                return
+
+            # парсим текст с временем + определяем длительность
+            _, dur, *reason = message.text.split(" ")
+            delta = TimeHelper.parse_str_to_duration(dur)
+            if not delta:
+                return
+
+            print(reason)
+
+            if 30 >= delta.total_seconds() or delta.total_seconds() >= 60 * 60 * 24 * 365:
+                await message.reply(
+                    "out of range. it should be between 30sec and 364days"
+                )
+                return
+
+            print(f"delta {delta}")
+
+            mute_until = dt.now() + delta
+
+            print(f"mute_until {mute_until}")
+
+            # мутим
+            await bot.restrict_chat_member(
+                message.chat.id,
+                muted_user.id,
+                types.ChatPermissions(
+                    can_send_messages=False,
+                    can_send_media_messages=False,
+                    can_send_other_messages=False,
+                ),
+                until_date=int(mute_until.timestamp()),
+            )
+            mute_str = TimeHelper.format_timedelta(delta)
+            mute_username = muted_user.username if muted_user.username else muted_user.full_name
+            mute_desc = None if len(reason)==0 else "Причина: " + " ".join(reason)
+
+            await message.reply(
+                f"Мут для @{mute_username} на {mute_str}. {mute_desc if mute_desc else ''}")
 
         @self._router.message()
         @self.__transactional
