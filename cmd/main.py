@@ -1,42 +1,45 @@
+import argparse
 import asyncio
 import logging
 import sys
 from aiogram import Dispatcher, Bot, Router
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    create_async_engine,
     async_sessionmaker,
-    AsyncSession,
 )
 
-from config import TOKEN, DB_URL
+from config.config import get_config
 from dummy_bot.bot.handlers import Service
 from dummy_bot.db.crud import GroupRepo, UserRepo, MediaRepo, PokakRepo
+from internal.database.postgres.postgres import Postgres
+from internal.database.redis.redis import Redis
+from internal.middleware.session_mw import DBSessionMiddleware
+
+
 from dummy_bot.middlewares.check_admins_middleware import CheckAdminMiddleware
-from dummy_bot.middlewares.db_middleware import DBSessionMiddleware
 
 
 async def main() -> None:
-    engine: AsyncEngine = create_async_engine(
-        url=DB_URL,
-        # echo=True,
-    )
-    async_session = async_sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autobegin=False,
-    )
+    print("starting bot...")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--env', help='Path to .env file')
+    args = parser.parse_args()
+
+    cfg = get_config(args.env)
+
+    db = Postgres(cfg.database)
+    cache = Redis(cfg.redis)
+
     bot = Bot(
-        token=TOKEN,
-        parse_mode=ParseMode.HTML,
+        token=cfg.telegram.get_token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
     dp = Dispatcher()
 
-    dp.update.middleware(DBSessionMiddleware(session_pool=async_session))
-    dp.update.middleware(CheckAdminMiddleware())
+    dp.update.middleware(DBSessionMiddleware(session_pool=db.get_sessionmaker()))
+    dp.update.middleware(CheckAdminMiddleware(cache=cache))
     dp.callback_query.middleware(CallbackAnswerMiddleware())
 
     router = Router()
@@ -56,7 +59,6 @@ async def main() -> None:
     dp.include_router(router)
 
     await dp.start_polling(bot)
-
 
 if __name__ == '__main__':
     logging.basicConfig(
