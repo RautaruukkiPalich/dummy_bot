@@ -8,14 +8,14 @@ from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from config.config import AppConfig
 from dummy_bot.bot.handlers import Service
 from dummy_bot.db.crud import GroupRepo, UserRepo, MediaRepo, PokakRepo
-from dummy_bot.middlewares.check_admins_middleware import CheckAdminMiddleware
 
 from internal.database.postgres.postgres import Postgres
 from internal.database.redis.redis import Redis
 from internal.database.transactional.uow import UOW
 from internal.logger.logger import Logger, ConsoleCustomFormatter
+from internal.middleware.admins_mw import AdminsMiddleware
 from internal.middleware.session_mw import DBSessionMiddleware
-from internal.presentation.start import StartRouter
+from internal.presentation.commands import CommandsRouter
 from internal.repository.group import GroupRepository
 from internal.repository.user import UserRepository
 from internal.usecase.commands import CommandsUseCase
@@ -97,7 +97,7 @@ class App:
             uow,
         )
 
-        StartRouter(
+        CommandsRouter(
             self.router,
             self.logger,
             cmd_uc
@@ -110,7 +110,7 @@ class App:
             DBSessionMiddleware(session_pool=self.database.get_sessionmaker()),
         )
         self.dp.update.middleware(
-            CheckAdminMiddleware(cache=self.cache),
+            AdminsMiddleware(cache=self.cache),
         )
         self.dp.callback_query.middleware(
             CallbackAnswerMiddleware(),
