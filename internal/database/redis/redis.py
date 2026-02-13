@@ -10,7 +10,6 @@ class Redis:
 
     @property
     def client(self) -> r.Redis:
-        """Ленивая инициализация Redis клиента"""
         if self.__client is None:
             self.__client = r.Redis(**self.__config.connection_kwargs)
         return self.__client
@@ -20,6 +19,9 @@ class Redis:
 
     async def set(self, key: str, value: str, expire: Optional[int] = None):
         return await self.client.set(f"{self.__config.connection_kwargs.get('db', 0)}:{key}", value, ex=expire)
+
+    async def ping(self):
+        return await self.client.ping()
 
     def close(self):
         if self.__client:
