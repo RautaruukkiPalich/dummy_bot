@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Media
+from internal.models.models import Media
 from internal.usecase.interfaces import IGroupRepo, IUOW, IMediaRepo
 
 

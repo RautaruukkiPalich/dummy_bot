@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Group, Pokak, User
+from internal.models.models import Group, Pokak, User
 from internal.dto.dto import StatisticFilterDTO, UserStatInfoDTO
 
 

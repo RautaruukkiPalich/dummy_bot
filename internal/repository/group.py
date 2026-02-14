@@ -1,7 +1,7 @@
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Group
+from internal.models.models import Group
 
 
 class GroupRepository:

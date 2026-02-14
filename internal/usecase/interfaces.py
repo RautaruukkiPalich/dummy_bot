@@ -2,8 +2,8 @@ from typing import Protocol, AsyncContextManager, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import User, Group, Media, Pokak
-from internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO, UserStatInfoDTO
+from internal.models.models import User, Group, Media, Pokak
+from internal.dto.dto import StatisticFilterDTO, UserStatInfoDTO
 
 
 class IUserRepo(Protocol):

@@ -3,7 +3,7 @@ from typing import Protocol
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO
+from internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO, MuteRequestDTO, MuteResponseDTO
 
 
 class ICommandUseCase(Protocol):
@@ -23,6 +23,10 @@ class IMediaUseCase(Protocol):
 
 class IPokakUseCase(Protocol):
     async def add(self, message: Message, session: AsyncSession) -> bool:...
+
+class IMuteUseCase(Protocol):
+    async def mute(self, req: MuteRequestDTO) -> MuteResponseDTO|None: ...
+
 
 class ILogger(Protocol):
     def debug(self, message: str, *args, **kwargs) -> None: ...

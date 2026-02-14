@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Pokak
+from internal.models.models import Pokak
 from internal.usecase.interfaces import IUserRepo, IGroupRepo, IMediaRepo, IUOW, IPokakRepo
 
 

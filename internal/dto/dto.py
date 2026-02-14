@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 
@@ -20,4 +20,12 @@ class UserStatInfoDTO:
 class StatisticResponseDTO:
     data: List[UserStatInfoDTO]
 
+@dataclass
+class MuteRequestDTO:
+    text: str
 
+@dataclass
+class MuteResponseDTO:
+    delta: timedelta
+    delta_str: str
+    reason: str|None

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Pokak
+from internal.models.models import Pokak
 
 
 class PokakRepository:

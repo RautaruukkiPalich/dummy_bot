@@ -25,6 +25,7 @@ from internal.repository.statistics import StatisticsRepository
 from internal.repository.user import UserRepository
 from internal.usecase.commands import CommandsUseCase
 from internal.usecase.media import MediaUseCase
+from internal.usecase.mute import MuteUseCase
 from internal.usecase.pokak import PokakUseCase
 from internal.usecase.statistics import StatisticsUseCase
 
@@ -119,7 +120,8 @@ class App:
                 media_repo=self.repositories.media,
                 pokak_repo=self.repositories.pokak,
                 uow=self.uow,
-            )
+            ),
+            mute=MuteUseCase(self.logger),
         )
 
     def _init_services(self):
@@ -139,6 +141,7 @@ class App:
                 router=self.router,
                 logger=self.logger,
                 pokak_use_case=self.uc.pokak,
+                mute_use_case=self.uc.mute,
             ),
         )
 
@@ -183,6 +186,7 @@ class UseCases:
     statistics: StatisticsUseCase
     media: MediaUseCase
     pokak: PokakUseCase
+    mute: MuteUseCase
 
 @dataclass
 class Routers:

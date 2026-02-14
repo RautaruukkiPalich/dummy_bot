@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import Media, Group
+from internal.models.models import Media, Group
 
 
 class MediaRepository:

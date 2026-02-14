@@ -1,7 +1,7 @@
 from aiogram import types
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import User, Group
+from internal.models.models import User, Group
 from internal.usecase.interfaces import IUOW, IGroupRepo, IUserRepo
 
 
