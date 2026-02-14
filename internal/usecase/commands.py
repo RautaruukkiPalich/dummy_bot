@@ -7,7 +7,7 @@ from dummy_bot.db.models import User, Group
 
 
 class ICmdsUserRepo(Protocol):
-    async def get(self, session: AsyncSession, user_id: str, group: Group) -> User | None: ...
+    async def get_by_group_and_user_id(self, session: AsyncSession, user_id: str, group: Group) -> User | None: ...
 
     async def insert(self, session: AsyncSession, user: User) -> User | None: ...
 
@@ -15,7 +15,7 @@ class ICmdsUserRepo(Protocol):
 
 
 class ICmdsGroupRepo(Protocol):
-    async def get(self, session: AsyncSession, group_id: str) -> Group | None: ...
+    async def get_by_chat_id(self, session: AsyncSession, group_id: str) -> Group | None: ...
 
     async def insert(self, session: AsyncSession, group: Group) -> Group | None: ...
 
@@ -41,7 +41,7 @@ class CommandsUseCase:
 
     async def start(self, message: types.Message, session: AsyncSession) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
             if group: return
 
             group = Group(group_id=str(message.chat.id))
@@ -49,10 +49,10 @@ class CommandsUseCase:
 
     async def join(self, message: types.Message, session: AsyncSession) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
             if not group: raise Exception()
 
-            user = await self._user_repo.get(session, str(message.from_user.id), group)
+            user = await self._user_repo.get_by_group_and_user_id(session, str(message.from_user.id), group)
 
             if not user:
                 user = User(
@@ -67,10 +67,10 @@ class CommandsUseCase:
 
     async def leave(self, message: types.Message, session: AsyncSession) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
             if not group: raise Exception()
 
-            user = await self._user_repo.get(session, str(message.from_user.id), group)
+            user = await self._user_repo.get_by_group_and_user_id(session, str(message.from_user.id), group)
             if not user: raise Exception()
 
             user.deactivate()

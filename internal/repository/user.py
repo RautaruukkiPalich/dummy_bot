@@ -6,7 +6,7 @@ from dummy_bot.db.models import User, Group
 
 class UserRepository:
 
-    async def get(self, session: AsyncSession, user_id: str, group: Group) -> User | None:
+    async def get_by_group_and_user_id(self, session: AsyncSession, user_id: str, group: Group) -> User | None:
         stmt = select(User).where(
             and_(
                 User.chat_id == user_id,
