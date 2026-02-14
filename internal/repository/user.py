@@ -24,9 +24,7 @@ class UserRepository:
         return user
 
     async def update(self, session: AsyncSession, user: User) -> User|None:
-        stmt = update(User).where(User.id == user.id)
-
-        await session.execute(stmt)
+        user = await session.merge(user)
         await session.flush()
         await session.refresh(user)
         return user

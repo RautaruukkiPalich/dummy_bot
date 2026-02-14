@@ -19,9 +19,7 @@ class GroupRepository:
         return group
 
     async def update(self, session: AsyncSession, group: Group) -> Group|None:
-        stmt = update(Group).where(Group.id == group.id)
-
-        await session.execute(stmt)
+        group = await session.merge(group)
         await session.flush()
         await session.refresh(group)
         return group
