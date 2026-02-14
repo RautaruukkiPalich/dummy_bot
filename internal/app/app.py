@@ -1,13 +1,13 @@
 import logging
 
+from dataclasses import dataclass
+
 from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
 from config.config import AppConfig
-from dummy_bot.bot.handlers import Service
-from dummy_bot.db.crud import GroupRepo, UserRepo, MediaRepo, PokakRepo
 
 from internal.database.postgres.postgres import Postgres
 from internal.database.redis.redis import Redis
@@ -46,14 +46,19 @@ class App:
 
     def _configure(self):
         self._init_logger()
+        self.logger.info("app configuring...")
+
         self._init_database()
         self._init_cache()
         self._init_bot()
         self._init_router()
         self._init_repositories()
-        # self._init_services()
-        self._init_new_services()
+        self._init_uow()
+        self._init_usecases()
+        self._init_services()
         self._init_dispatcher()
+
+        self.logger.info("app configured successfully")
 
     def _init_logger(self):
         self.logger = Logger(
@@ -78,73 +83,63 @@ class App:
 
     def _init_repositories(self):
         self.repositories = Repositories(
-            group=GroupRepo(),
-            user=UserRepo(),
-            media=MediaRepo(),
-            pokak=PokakRepo(),
+            group=GroupRepository(),
+            user=UserRepository(),
+            media=MediaRepository(),
+            pokak=PokakRepository(),
+            statistics=StatisticsRepository(),
+        )
+
+    def _init_uow(self):
+        self.uow = UOW()
+
+    def _init_usecases(self):
+        self.uc = UseCases(
+            commands=CommandsUseCase(
+                group_repo=self.repositories.group,
+                user_repo=self.repositories.user,
+                uow=self.uow,
+            ),
+
+            statistics=StatisticsUseCase(
+                group_repo=self.repositories.group,
+                stat_repo=self.repositories.statistics,
+                uow=self.uow,
+            ),
+
+            media=MediaUseCase(
+                group_repo=self.repositories.group,
+                media_repo=self.repositories.media,
+                uow=self.uow,
+            ),
+
+            pokak=PokakUseCase(
+                user_repo=self.repositories.user,
+                group_repo=self.repositories.group,
+                media_repo=self.repositories.media,
+                pokak_repo=self.repositories.pokak,
+                uow=self.uow,
+            )
         )
 
     def _init_services(self):
-        Service(
-            group_repo=self.repositories.group,
-            user_repo=self.repositories.user,
-            media_repo=self.repositories.media,
-            pokak_repo=self.repositories.pokak,
-            rout=self.router,
-        )
-
-    def _init_new_services(self):
-        urepo2 = UserRepository()
-        grepo2 = GroupRepository()
-        srepo2 = StatisticsRepository()
-        mrepo2 = MediaRepository()
-        prepo2 = PokakRepository()
-
-        uow = UOW()
-
-        cmd_uc = CommandsUseCase(
-            grepo2,
-            urepo2,
-            uow,
-        )
-
-        stat_uc = StatisticsUseCase(
-            grepo2,
-            srepo2,
-            uow,
-        )
-
-        media_uc = MediaUseCase(
-            grepo2,
-            mrepo2,
-            uow,
-        )
-
-        pokak_uc = PokakUseCase(
-            urepo2,
-            grepo2,
-            mrepo2,
-            prepo2,
-            uow,
-        )
-
-        CommandsRouter(
-            self.router,
-            self.logger,
-            cmd_uc,
-            stat_uc,
-        )
-
-        StatesRouter(
-            self.router,
-            self.logger,
-            media_uc,
-        )
-
-        TextRouter(
-            self.router,
-            self.logger,
-            pokak_uc,
+        self.routers = Routers(
+            commands=CommandsRouter(
+                router=self.router,
+                logger=self.logger,
+                commands_use_case=self.uc.commands,
+                stat_use_case=self.uc.statistics,
+            ),
+            states=StatesRouter(
+                router=self.router,
+                logger=self.logger,
+                media_use_case=self.uc.media,
+            ),
+            text=TextRouter(
+                router=self.router,
+                logger=self.logger,
+                pokak_use_case=self.uc.pokak,
+            ),
         )
 
     def _init_dispatcher(self):
@@ -164,6 +159,7 @@ class App:
     async def run(self):
         await self.database.ping()
         await self.cache.ping()
+        self.logger.info("start polling...")
         await self.dp.start_polling(self.bot)
 
     async def shutdown(self):
@@ -173,15 +169,23 @@ class App:
         await self.database.shutdown()
 
 
+@dataclass
 class Repositories:
-    def __init__(
-            self,
-            group: GroupRepo,
-            user: UserRepo,
-            media: MediaRepo,
-            pokak: PokakRepo,
-    ):
-        self.group = group
-        self.user = user
-        self.media = media
-        self.pokak = pokak
+    group: GroupRepository
+    user: UserRepository
+    media: MediaRepository
+    pokak: PokakRepository
+    statistics: StatisticsRepository
+
+@dataclass
+class UseCases:
+    commands: CommandsUseCase
+    statistics: StatisticsUseCase
+    media: MediaUseCase
+    pokak: PokakUseCase
+
+@dataclass
+class Routers:
+    commands: CommandsRouter
+    states: StatesRouter
+    text: TextRouter

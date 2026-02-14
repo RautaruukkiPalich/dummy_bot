@@ -20,12 +20,12 @@ class CommandsRouter:
             self,
             router: Router,
             logger: ILogger,
-            start_use_case: ICommandUseCase,
+            commands_use_case: ICommandUseCase,
             stat_use_case: IStatisticsUseCase,
     ):
         self.__router = router
         self.__logger = logger
-        self.__start_use_case = start_use_case
+        self.__commands_use_case = commands_use_case
         self.__stat_use_case = stat_use_case
         self.__register_router()
 
@@ -39,19 +39,19 @@ class CommandsRouter:
                 await message.reply("only admin can use start command")
                 return
 
-            await self.__start_use_case.start(message, session)
+            await self.__commands_use_case.start(message, session)
             await message.reply("welcome")
 
         @self.__router.message(Command(commands=["join"]))
         @enriched_logger(self.__logger, class_name)
         async def join(message: Message, session: AsyncSession) -> None:
-            await self.__start_use_case.join(message, session)
+            await self.__commands_use_case.join(message, session)
             await message.reply("joined")
 
         @self.__router.message(Command(commands=["leave"]))
         @enriched_logger(self.__logger, class_name)
         async def leave(message: Message, session: AsyncSession) -> None:
-            await self.__start_use_case.leave(message, session)
+            await self.__commands_use_case.leave(message, session)
             await message.reply("bye")
 
         @self.__router.message(Command(commands=[
