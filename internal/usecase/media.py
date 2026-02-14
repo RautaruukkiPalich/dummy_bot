@@ -2,17 +2,17 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.db.models import Media
-from internal.usecase.interfaces import ICmdsGroupRepo, IUOW, IMediaRepo
+from internal.usecase.interfaces import IGroupRepo, IUOW, IMediaRepo
 
 
 class MediaUseCase:
     def __init__(
             self,
-            group_repo: ICmdsGroupRepo,
+            group_repo: IGroupRepo,
             media_repo: IMediaRepo,
             uow: IUOW,
     ) -> None:
-        self._group_repo: ICmdsGroupRepo = group_repo
+        self._group_repo: IGroupRepo = group_repo
         self._media_repo: IMediaRepo = media_repo
         self._uow: IUOW = uow
 

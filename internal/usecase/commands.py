@@ -2,18 +2,18 @@ from aiogram import types
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.db.models import User, Group
-from internal.usecase.interfaces import IUOW, ICmdsGroupRepo, ICmdsUserRepo
+from internal.usecase.interfaces import IUOW, IGroupRepo, IUserRepo
 
 
 class CommandsUseCase:
     def __init__(
             self,
-            group_repo: ICmdsGroupRepo,
-            user_repo: ICmdsUserRepo,
+            group_repo: IGroupRepo,
+            user_repo: IUserRepo,
             uow: IUOW,
     ) -> None:
-        self._group_repo: ICmdsGroupRepo = group_repo
-        self._user_repo: ICmdsUserRepo = user_repo
+        self._group_repo: IGroupRepo = group_repo
+        self._user_repo: IUserRepo = user_repo
         self._uow: IUOW = uow
 
     async def start(self, message: types.Message, session: AsyncSession) -> None:

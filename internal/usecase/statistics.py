@@ -2,17 +2,17 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from internal.dto.dto import StatisticResponseDTO, StatisticFilterDTO
-from internal.usecase.interfaces import ICmdsGroupRepo, IStatisticsRepo, IUOW
+from internal.usecase.interfaces import IGroupRepo, IStatisticsRepo, IUOW
 
 
 class StatisticsUseCase:
     def __init__(
             self,
-            group_repo: ICmdsGroupRepo,
+            group_repo: IGroupRepo,
             stat_repo: IStatisticsRepo,
             uow: IUOW,
     ) -> None:
-        self._group_repo: ICmdsGroupRepo = group_repo
+        self._group_repo: IGroupRepo = group_repo
         self._stat_repo: IStatisticsRepo = stat_repo
         self._uow: IUOW = uow
 

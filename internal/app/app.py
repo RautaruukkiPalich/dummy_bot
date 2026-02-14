@@ -17,12 +17,15 @@ from internal.middleware.admins_mw import AdminsMiddleware
 from internal.middleware.session_mw import DBSessionMiddleware
 from internal.presentation.commands import CommandsRouter
 from internal.presentation.states import StatesRouter
+from internal.presentation.text import TextRouter
 from internal.repository.group import GroupRepository
 from internal.repository.media import MediaRepository
+from internal.repository.pokak import PokakRepository
 from internal.repository.statistics import StatisticsRepository
 from internal.repository.user import UserRepository
 from internal.usecase.commands import CommandsUseCase
 from internal.usecase.media import MediaUseCase
+from internal.usecase.pokak import PokakUseCase
 from internal.usecase.statistics import StatisticsUseCase
 
 
@@ -95,6 +98,7 @@ class App:
         grepo2 = GroupRepository()
         srepo2 = StatisticsRepository()
         mrepo2 = MediaRepository()
+        prepo2 = PokakRepository()
 
         uow = UOW()
 
@@ -116,6 +120,14 @@ class App:
             uow,
         )
 
+        pokak_uc = PokakUseCase(
+            urepo2,
+            grepo2,
+            mrepo2,
+            prepo2,
+            uow,
+        )
+
         CommandsRouter(
             self.router,
             self.logger,
@@ -127,6 +139,12 @@ class App:
             self.router,
             self.logger,
             media_uc,
+        )
+
+        TextRouter(
+            self.router,
+            self.logger,
+            pokak_uc,
         )
 
     def _init_dispatcher(self):
