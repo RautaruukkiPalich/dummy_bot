@@ -17,8 +17,10 @@ from internal.middleware.admins_mw import AdminsMiddleware
 from internal.middleware.session_mw import DBSessionMiddleware
 from internal.presentation.commands import CommandsRouter
 from internal.repository.group import GroupRepository
+from internal.repository.statistics import StatisticsRepository
 from internal.repository.user import UserRepository
 from internal.usecase.commands import CommandsUseCase
+from internal.usecase.statistics import StatisticsUseCase
 
 
 class App:
@@ -88,6 +90,7 @@ class App:
     def _init_new_services(self):
         urepo2 = UserRepository()
         grepo2 = GroupRepository()
+        srepo2 = StatisticsRepository()
 
         uow = UOW()
 
@@ -97,10 +100,17 @@ class App:
             uow,
         )
 
+        stat_uc = StatisticsUseCase(
+            grepo2,
+            srepo2,
+            uow,
+        )
+
         CommandsRouter(
             self.router,
             self.logger,
-            cmd_uc
+            cmd_uc,
+            stat_uc,
         )
 
     def _init_dispatcher(self):

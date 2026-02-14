@@ -3,6 +3,8 @@ from typing import Protocol
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO
+
 
 class ICommandUseCase(Protocol):
     async def start(self, message: Message, session: AsyncSession): ...
@@ -10,6 +12,10 @@ class ICommandUseCase(Protocol):
     async def join(self, message: Message, session: AsyncSession): ...
 
     async def leave(self, message: Message, session: AsyncSession): ...
+
+
+class IStatisticsUseCase(Protocol):
+    async def statistics(self, message: Message, session: AsyncSession, stat_filter: StatisticFilterDTO) -> StatisticResponseDTO: ...
 
 
 class ILogger(Protocol):

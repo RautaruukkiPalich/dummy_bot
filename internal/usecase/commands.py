@@ -1,31 +1,8 @@
-from typing import Protocol, AsyncContextManager
-
 from aiogram import types
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.db.models import User, Group
-
-
-class ICmdsUserRepo(Protocol):
-    async def get_by_group_and_user_id(self, session: AsyncSession, user_id: str, group: Group) -> User | None: ...
-
-    async def insert(self, session: AsyncSession, user: User) -> User | None: ...
-
-    async def update(self, session: AsyncSession, user: User) -> User | None: ...
-
-
-class ICmdsGroupRepo(Protocol):
-    async def get_by_chat_id(self, session: AsyncSession, group_id: str) -> Group | None: ...
-
-    async def insert(self, session: AsyncSession, group: Group) -> Group | None: ...
-
-    async def update(self, session: AsyncSession, group: Group) -> Group | None: ...
-
-
-class IUOW(Protocol):
-    def with_tx(self, session: AsyncSession) -> AsyncContextManager[None]: ...
-
-    def readonly(self, session: AsyncSession) -> AsyncContextManager[None]: ...
+from internal.usecase.interfaces import IUOW, ICmdsGroupRepo, ICmdsUserRepo
 
 
 class CommandsUseCase:
