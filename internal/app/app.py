@@ -16,10 +16,13 @@ from internal.logger.logger import Logger, ConsoleCustomFormatter
 from internal.middleware.admins_mw import AdminsMiddleware
 from internal.middleware.session_mw import DBSessionMiddleware
 from internal.presentation.commands import CommandsRouter
+from internal.presentation.states import StatesRouter
 from internal.repository.group import GroupRepository
+from internal.repository.media import MediaRepository
 from internal.repository.statistics import StatisticsRepository
 from internal.repository.user import UserRepository
 from internal.usecase.commands import CommandsUseCase
+from internal.usecase.media import MediaUseCase
 from internal.usecase.statistics import StatisticsUseCase
 
 
@@ -91,6 +94,7 @@ class App:
         urepo2 = UserRepository()
         grepo2 = GroupRepository()
         srepo2 = StatisticsRepository()
+        mrepo2 = MediaRepository()
 
         uow = UOW()
 
@@ -106,11 +110,23 @@ class App:
             uow,
         )
 
+        media_uc = MediaUseCase(
+            grepo2,
+            mrepo2,
+            uow,
+        )
+
         CommandsRouter(
             self.router,
             self.logger,
             cmd_uc,
             stat_uc,
+        )
+
+        StatesRouter(
+            self.router,
+            self.logger,
+            media_uc,
         )
 
     def _init_dispatcher(self):

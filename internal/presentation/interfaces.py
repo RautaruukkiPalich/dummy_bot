@@ -18,6 +18,10 @@ class IStatisticsUseCase(Protocol):
     async def statistics(self, message: Message, session: AsyncSession, stat_filter: StatisticFilterDTO) -> StatisticResponseDTO: ...
 
 
+class IMediaUseCase(Protocol):
+    async def set_media(self, message: Message, session: AsyncSession, file_unique_id: str) -> None: ...
+
+
 class ILogger(Protocol):
     def debug(self, message: str, *args, **kwargs) -> None: ...
 

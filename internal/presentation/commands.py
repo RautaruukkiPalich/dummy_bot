@@ -2,11 +2,13 @@ from typing import List
 
 from aiogram import Router
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from internal.dto.dto import StatisticFilterDTO
 from internal.dto.enums import StatisticEnum
+from internal.fsm.fsm import SetMedia
 from internal.utils.stat_flter import PeriodEnum
 from internal.presentation.decorators import enriched_logger
 from internal.presentation.interfaces import ICommandUseCase, ILogger, IStatisticsUseCase
@@ -69,3 +71,13 @@ class CommandsRouter:
             report = ReportStat(period, stat.data, f.limit).prepare()
             await message.reply(report)
 
+        @self.__router.message(Command(commands=["setpokakmedia"]))
+        @enriched_logger(self.__logger, class_name)
+        async def set_media(message: Message, admins: List[int], state: FSMContext) -> None:
+            if message.from_user.id not in admins:
+                await message.reply("only admin can use start command")
+                return
+
+            await state.set_state(SetMedia.get_media)
+
+            await message.reply(text=f'Отправь мне гифку или стикер, которая будет обозначать успешный покак')

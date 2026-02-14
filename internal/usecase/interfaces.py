@@ -2,7 +2,7 @@ from typing import Protocol, AsyncContextManager, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dummy_bot.db.models import User, Group
+from dummy_bot.db.models import User, Group, Media
 from internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO, UserStatInfoDTO
 
 
@@ -25,6 +25,12 @@ class ICmdsGroupRepo(Protocol):
 class IStatisticsRepo:
     async def statistics(self, session: AsyncSession, group: Group, f: StatisticFilterDTO) -> List[UserStatInfoDTO]: ...
 
+class IMediaRepo(Protocol):
+    async def get_by_group(self, session: AsyncSession, group: Group) -> Media | None: ...
+
+    async def insert(self, session: AsyncSession, media: Media) -> Media: ...
+
+    async def update(self, session: AsyncSession, media: Media) -> Media: ...
 
 class IUOW(Protocol):
     def with_tx(self, session: AsyncSession) -> AsyncContextManager[None]: ...
