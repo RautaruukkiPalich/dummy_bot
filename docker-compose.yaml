@@ -46,6 +46,7 @@ services:
   bot:
     container_name: bot_container_dummy_bot
     build: .
+#    command: ["--env", ".env"]
     environment:
       TG_TOKEN: "${TG_TOKEN:-token}"
       DB_HOST: database
@@ -56,9 +57,7 @@ services:
     ports:
       - "443:443"
 #    volumes:
-#      - . :/usr/src
-    volumes:
-      - .env:/usr/src/.env:ro
+#      - .env:/usr/src/.env:ro
     restart: always
     depends_on:
       - database
