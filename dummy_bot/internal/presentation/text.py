@@ -38,7 +38,7 @@ class TextRouter:
                 return
 
             user_to_mute = message.reply_to_message.from_user
-            if user_to_mute in admins or user_to_mute.is_bot:
+            if user_to_mute.id in admins or user_to_mute.is_bot:
                 await message.reply("cant mute admins and bots")
                 return
 

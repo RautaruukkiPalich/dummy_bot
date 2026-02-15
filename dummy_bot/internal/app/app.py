@@ -63,7 +63,7 @@ class App:
 
     def _init_logger(self):
         self.logger = Logger(
-            level=logging.WARN,
+            level=logging.INFO,
             formatter=ConsoleCustomFormatter(),
         )
 
