@@ -14,4 +14,6 @@ COPY . .
 
 RUN poetry install
 
-CMD ["python3", "main.py"]
+#CMD ["python3", "dummy_bot/cmd/main.py", "--env", ".env"]
+
+ENTRYPOINT ["python3", "dummy_bot/cmd/main.py"]
