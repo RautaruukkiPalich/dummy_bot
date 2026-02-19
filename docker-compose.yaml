@@ -57,6 +57,7 @@ services:
     ports:
       - "443:443"
 #    volumes:
+#      - ./migrations:/usr/src/migrations
 #      - .env:/usr/src/.env:ro
     restart: always
     depends_on:

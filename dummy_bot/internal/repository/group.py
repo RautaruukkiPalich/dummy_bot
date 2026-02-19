@@ -6,25 +6,29 @@ from dummy_bot.internal.models.models import Group
 
 class GroupRepository:
 
-    async def get_by_chat_id(self, session: AsyncSession, group_id: str) -> Group|None:
-        stmt = select(Group).where(Group.group_id == group_id)
+    @staticmethod
+    async def get_by_chat_id(session: AsyncSession, chat_id: int) -> Group|None:
+        stmt = select(Group).where(Group.group_id == chat_id)
 
         res = await session.execute(stmt)
         return res.scalar_one_or_none()
 
-    async def insert(self, session: AsyncSession, group: Group) -> Group|None:
+    @staticmethod
+    async def insert(session: AsyncSession, group: Group) -> Group|None:
         session.add(group)
         await session.flush()
         await session.refresh(group)
         return group
 
-    async def update(self, session: AsyncSession, group: Group) -> Group|None:
+    @staticmethod
+    async def update(session: AsyncSession, group: Group) -> Group|None:
         group = await session.merge(group)
         await session.flush()
         await session.refresh(group)
         return group
 
-    async def delete(self, session: AsyncSession, group: Group) -> None:
+    @staticmethod
+    async def delete(session: AsyncSession, group: Group) -> None:
         stmt = delete(Group).where(Group.id == group.id)
 
         await session.execute(stmt)

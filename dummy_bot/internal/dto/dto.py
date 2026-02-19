@@ -30,7 +30,7 @@ class MuteResponseDTO:
 @dataclass
 class TelegramMessageDTO:
     chat_id: int
-    user_id: int
+    user_chat_id: int
     username: str|None
     fullname: str|None
     text: str|None
@@ -40,7 +40,7 @@ class TelegramMessageDTO:
     def from_message(message: Message) -> "TelegramMessageDTO":
         dto = TelegramMessageDTO(
             chat_id=message.chat.id,
-            user_id=message.from_user.id,
+            user_chat_id=message.from_user.id,
             username=message.from_user.username,
             fullname=message.from_user.full_name,
             text=message.text,

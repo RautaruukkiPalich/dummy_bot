@@ -18,22 +18,22 @@ class CommandsUseCase:
 
     async def start(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if group: return
 
-            group = Group(group_id=str(dto.chat_id))
+            group = Group(group_id=dto.chat_id)
             await self._group_repo.insert(session, group)
 
     async def join(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if not group: raise Exception()
 
-            user = await self._user_repo.get_by_group_and_user_id(session, str(dto.user_id), group)
+            user = await self._user_repo.get_by_group_and_user_chat_id(session, dto.user_chat_id, group)
 
             if not user:
                 user = User(
-                    chat_id=str(dto.user_id),
+                    chat_id=dto.user_chat_id,
                     group_id=group.id,
                     username=dto.username,
                     fullname=dto.fullname,
@@ -44,10 +44,10 @@ class CommandsUseCase:
 
     async def leave(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if not group: raise Exception()
 
-            user = await self._user_repo.get_by_group_and_user_id(session, str(dto.user_id), group)
+            user = await self._user_repo.get_by_group_and_user_chat_id(session, dto.user_chat_id, group)
             if not user: raise Exception()
 
             user.deactivate()

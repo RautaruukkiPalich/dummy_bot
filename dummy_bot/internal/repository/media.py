@@ -6,7 +6,8 @@ from dummy_bot.internal.models.models import Media, Group
 
 class MediaRepository:
 
-    async def get_by_group(self, session: AsyncSession, group: Group) -> Media|None:
+    @staticmethod
+    async def get_by_group(session: AsyncSession, group: Group) -> Media|None:
         stmt = select(
             Media
         ).where(
@@ -16,13 +17,15 @@ class MediaRepository:
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def insert(self, session: AsyncSession, media: Media) -> Media:
+    @staticmethod
+    async def insert(session: AsyncSession, media: Media) -> Media:
         session.add(media)
         await session.flush()
         await session.refresh(media)
         return media
 
-    async def update(self, session: AsyncSession, media: Media) -> Media:
+    @staticmethod
+    async def update(session: AsyncSession, media: Media) -> Media:
         media = await session.merge(media)
         await session.flush()
         await session.refresh(media)

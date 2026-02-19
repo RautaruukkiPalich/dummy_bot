@@ -21,7 +21,7 @@ class MediaUseCase:
         async with self._uow.with_tx(session):
             if not dto.media_file_unique_id: raise
 
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if not group: raise
 
             media = await self._media_repo.get_by_group(session, group)

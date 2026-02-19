@@ -19,7 +19,7 @@ class StatisticsUseCase:
                          stat_filter: StatisticFilterDTO) -> StatisticResponseDTO:
 
         async with self._uow.readonly(session):
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if not group: raise
 
             res = await self._stat_repo.statistics(session, group, stat_filter)

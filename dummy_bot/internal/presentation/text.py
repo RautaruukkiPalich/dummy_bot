@@ -36,13 +36,13 @@ class TextRouter:
 
             user_to_mute = message.reply_to_message.from_user
             if user_to_mute.id in admins or user_to_mute.is_bot:
-                await message.reply("cant mute admins and bots")
+                await message.reply("не могу замутить админов и ботов")
                 return
 
             dto = TelegramMessageDTO.from_message(message)
             resp = await self._mute_use_case.mute(dto)
             if not resp:
-                await message.reply("invalid format")
+                await message.reply("неверный формат времени\n\nпример правильного использования \'!w 1h\'\n\nмут не может быть меньше 30 секунд или больше 364 дней")
                 return
 
             await bot.restrict_chat_member(

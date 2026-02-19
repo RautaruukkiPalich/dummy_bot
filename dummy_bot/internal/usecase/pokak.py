@@ -22,11 +22,11 @@ class PokakUseCase:
 
     async def add(self, session: AsyncSession, dto: TelegramMessageDTO) -> bool:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
+            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
             if not group:
                 return False
 
-            user = await self._user_repo.get_by_group_and_user_id(session, str(dto.user_id), group)
+            user = await self._user_repo.get_by_group_and_user_chat_id(session, dto.user_chat_id, group)
             if not user or not user.is_active:
                 return False
 

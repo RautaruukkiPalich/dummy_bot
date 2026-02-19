@@ -25,7 +25,6 @@ class AdminsMiddleware(BaseMiddleware):
     ) -> Any:
         chat_id = event.chat.id
         bot = data["bot"]
-        bot2 = data.get("bot")
 
         if event.from_user.id == chat_id:
             data["admins"] = [chat_id, ]
@@ -67,6 +66,8 @@ class AdminsMiddleware(BaseMiddleware):
 
     async def _get_admins_from_cache(self, key: str) -> List[int]:
         admins = await self.__cache.get(key)
+        if not admins:
+            raise AttributeError(f"no data for key: {key}")
         return [int(admin) for admin in str(admins).split(";")]
 
     async def _set_admins_to_cache(self, key: str, data: List[int], ttl: int = 10) -> None:

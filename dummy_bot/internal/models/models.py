@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import (
     PrimaryKeyConstraint,
     UniqueConstraint,
-    ForeignKey,
+    ForeignKey, BigInteger,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -15,7 +15,7 @@ class Group(Base):
     __tablename__ = 'groups'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    group_id: Mapped[str] = mapped_column(unique=True, nullable=False)
+    group_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     created_on: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_on: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
 
@@ -43,7 +43,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    chat_id: Mapped[str] = mapped_column(nullable=False)
+    chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     group: Mapped["Group"] = relationship(foreign_keys=[group_id])
     username: Mapped[str | None] = mapped_column(default="", nullable=True)

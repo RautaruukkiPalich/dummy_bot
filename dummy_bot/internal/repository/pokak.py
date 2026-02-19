@@ -5,7 +5,8 @@ from dummy_bot.internal.models.models import Pokak
 
 class PokakRepository:
 
-    async def insert(self, session: AsyncSession, pokak: Pokak) -> Pokak:
+    @staticmethod
+    async def insert(session: AsyncSession, pokak: Pokak) -> Pokak:
         session.add(pokak)
         await session.flush()
         await session.refresh(pokak)

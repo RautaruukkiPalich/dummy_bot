@@ -48,5 +48,5 @@ class StatesRouter:
             await self.__media_use_case.set_media(session, dto)
 
             await state.clear()
-            await message.reply(text=f'Success: отправляй его, когда покакаешь')
+            await message.reply(text=f'Успешно: отправляй его, когда покакаешь')
 

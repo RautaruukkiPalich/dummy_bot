@@ -9,7 +9,8 @@ from dummy_bot.internal.dto.dto import StatisticFilterDTO, UserStatInfoDTO
 
 class StatisticsRepository:
 
-    async def statistics(self, session: AsyncSession, group: Group, f: StatisticFilterDTO) -> List[UserStatInfoDTO]:
+    @staticmethod
+    async def statistics(session: AsyncSession, group: Group, f: StatisticFilterDTO) -> List[UserStatInfoDTO]:
         stmt = select(
             User.id,
             User.username,

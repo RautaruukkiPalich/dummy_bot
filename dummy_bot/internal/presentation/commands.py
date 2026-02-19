@@ -38,27 +38,27 @@ class CommandsRouter:
         @enriched_logger(self.__logger, class_name)
         async def start(message: Message, admins: List[int], session: AsyncSession) -> None:
             if message.from_user.id not in admins:
-                await message.reply("only admin can use start command")
+                await message.reply("только пользователи с ролью администратора могут использовать эту команду")
                 return
 
             dto = TelegramMessageDTO.from_message(message)
 
             await self.__commands_use_case.start(session, dto)
-            await message.reply("welcome")
+            await message.reply("приветствую")
 
         @self.__router.message(Command(commands=["join"]))
         @enriched_logger(self.__logger, class_name)
         async def join(message: Message, session: AsyncSession) -> None:
             dto = TelegramMessageDTO.from_message(message)
             await self.__commands_use_case.join(session, dto)
-            await message.reply("joined")
+            await message.reply(f"{dto.username or dto.fullname} присоединяется")
 
         @self.__router.message(Command(commands=["leave"]))
         @enriched_logger(self.__logger, class_name)
         async def leave(message: Message, session: AsyncSession) -> None:
             dto = TelegramMessageDTO.from_message(message)
             await self.__commands_use_case.leave(session, dto)
-            await message.reply("bye")
+            await message.reply(f"{dto.username or dto.fullname} покидает нас")
 
         @self.__router.message(Command(commands=[
             StatisticEnum.WEEK.value,
@@ -83,7 +83,7 @@ class CommandsRouter:
         @enriched_logger(self.__logger, class_name)
         async def set_media(message: Message, admins: List[int], state: FSMContext) -> None:
             if message.from_user.id not in admins:
-                await message.reply("only admin can use start command")
+                await message.reply("только пользователи с ролью администратора могут использовать эту команду")
                 return
 
             await state.set_state(SetMedia.get_media)
