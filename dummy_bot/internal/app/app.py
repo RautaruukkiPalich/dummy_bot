@@ -12,7 +12,7 @@ from dummy_bot.config.config import AppConfig
 from dummy_bot.internal.database.postgres.client import PostgresClient
 from dummy_bot.internal.database.redis.client import RedisClient
 from dummy_bot.internal.database.transactional.uow import UOW
-from dummy_bot.internal.logger.logger import Logger, ConsoleCustomFormatter
+from dummy_bot.internal.logger.logger import Logger, JSONCustomFormatter
 from dummy_bot.internal.middleware.admins_mw import AdminsMiddleware
 from dummy_bot.internal.middleware.session_mw import DBSessionMiddleware
 from dummy_bot.internal.presentation.commands import CommandsRouter
@@ -53,18 +53,18 @@ class App:
         self._init_cache()
         self._init_bot()
         self._init_router()
+        self._init_dispatcher()
         self._init_repositories()
         self._init_uow()
-        self._init_usecases()
+        self._init_use_cases()
         self._init_services()
-        self._init_dispatcher()
 
         logging.info("app configured successfully")
 
     def _init_logger(self):
         self.logger = Logger(
             level=logging.INFO,
-            formatter=ConsoleCustomFormatter(),
+            formatter=JSONCustomFormatter(),
         )
 
     def _init_bot(self):
@@ -81,6 +81,8 @@ class App:
 
     def _init_router(self):
         self.router = Router()
+        self.admin_router = Router()
+        self.admin_router.message.middleware(AdminsMiddleware(cache=self.cache))
 
     def _init_repositories(self):
         self.repositories = Repositories(
@@ -94,7 +96,7 @@ class App:
     def _init_uow(self):
         self.uow = UOW()
 
-    def _init_usecases(self):
+    def _init_use_cases(self):
         self.uc = UseCases(
             commands=CommandsUseCase(
                 group_repo=self.repositories.group,
@@ -128,17 +130,20 @@ class App:
         self.routers = Routers(
             commands=CommandsRouter(
                 router=self.router,
+                admin_router=self.admin_router,
                 logger=self.logger,
                 commands_use_case=self.uc.commands,
                 stat_use_case=self.uc.statistics,
             ),
             states=StatesRouter(
                 router=self.router,
+                admin_router=self.admin_router,
                 logger=self.logger,
                 media_use_case=self.uc.media,
             ),
             text=TextRouter(
                 router=self.router,
+                admin_router=self.admin_router,
                 logger=self.logger,
                 pokak_use_case=self.uc.pokak,
                 mute_use_case=self.uc.mute,
@@ -151,12 +156,12 @@ class App:
         self.dp.update.middleware(
             DBSessionMiddleware(session_pool=self.database.get_sessionmaker()),
         )
-        self.dp.update.middleware(
-            AdminsMiddleware(cache=self.cache),
-        )
+
         self.dp.callback_query.middleware(
             CallbackAnswerMiddleware(),
         )
+
+        self.dp.include_router(self.admin_router)
         self.dp.include_router(self.router)
 
     async def run(self):

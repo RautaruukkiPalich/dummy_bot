@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from datetime import datetime
@@ -45,7 +46,29 @@ class Logger:
         extra = {"data": kwargs, "timestamp": datetime.now().isoformat()}
         return self.__logger.error(message, extra=extra)
 
-class ConsoleCustomFormatter(logging.Formatter):
+
+class JSONCustomFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%dT%H:%M:%S')
+
+        data = {
+            "level": record.levelname,
+            "timestamp": timestamp,
+            "message": record.getMessage(),
+        }
+
+        if hasattr(record, 'data'):
+            data.update(**record.data)
+
+        if record.exc_info:
+            data.update({
+                "exception": self.formatException(record.exc_info),
+            })
+
+        return json.dumps(data)
+
+
+class TextCustomFormatter(logging.Formatter):
     def format(self, record):
         timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
 

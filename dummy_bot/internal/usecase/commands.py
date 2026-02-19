@@ -1,6 +1,6 @@
-from aiogram import types
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from dummy_bot.internal.dto.dto import TelegramMessageDTO
 from dummy_bot.internal.models.models import User, Group
 from dummy_bot.internal.usecase.interfaces import IUOW, IGroupRepo, IUserRepo
 
@@ -16,38 +16,38 @@ class CommandsUseCase:
         self._user_repo: IUserRepo = user_repo
         self._uow: IUOW = uow
 
-    async def start(self, message: types.Message, session: AsyncSession) -> None:
+    async def start(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
             if group: return
 
-            group = Group(group_id=str(message.chat.id))
+            group = Group(group_id=str(dto.chat_id))
             await self._group_repo.insert(session, group)
 
-    async def join(self, message: types.Message, session: AsyncSession) -> None:
+    async def join(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
             if not group: raise Exception()
 
-            user = await self._user_repo.get_by_group_and_user_id(session, str(message.from_user.id), group)
+            user = await self._user_repo.get_by_group_and_user_id(session, str(dto.user_id), group)
 
             if not user:
                 user = User(
-                    chat_id=str(message.from_user.id),
+                    chat_id=str(dto.user_id),
                     group_id=group.id,
-                    username=message.from_user.username,
-                    fullname=message.from_user.full_name,
+                    username=dto.username,
+                    fullname=dto.fullname,
                 )
 
             user.activate()
             await self._user_repo.insert(session, user)
 
-    async def leave(self, message: types.Message, session: AsyncSession) -> None:
+    async def leave(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
         async with self._uow.with_tx(session):
-            group = await self._group_repo.get_by_chat_id(session, str(message.chat.id))
+            group = await self._group_repo.get_by_chat_id(session, str(dto.chat_id))
             if not group: raise Exception()
 
-            user = await self._user_repo.get_by_group_and_user_id(session, str(message.from_user.id), group)
+            user = await self._user_repo.get_by_group_and_user_id(session, str(dto.user_id), group)
             if not user: raise Exception()
 
             user.deactivate()

@@ -23,10 +23,11 @@ class AdminsMiddleware(BaseMiddleware):
             event: Message,
             data: Dict[str, Any]
     ) -> Any:
-        chat_id = data["event_chat"].id
+        chat_id = event.chat.id
         bot = data["bot"]
+        bot2 = data.get("bot")
 
-        if data["event_from_user"].id == chat_id:
+        if event.from_user.id == chat_id:
             data["admins"] = [chat_id, ]
         else:
             data["admins"] = await self._get_chat_administrators(bot, chat_id)
@@ -41,20 +42,14 @@ class AdminsMiddleware(BaseMiddleware):
                 bot, chat_id = args
 
                 try:
-                    admins = await self.__cache.get(str(chat_id))
-                    if admins:
-                        return [int(admin) for admin in str(admins).split(";")]
+                    return await self._get_admins_from_cache(str(chat_id))
                 except Exception as e:
                     print(f"failed get from cache: {e.__repr__()}")
 
                 admins = await fn(self, *args)
 
                 try:
-                    await self.__cache.set(
-                        key=str(chat_id),
-                        value=';'.join(list(map(str, admins))),
-                        expire=ttl,
-                    )
+                    await self._set_admins_to_cache(str(chat_id), admins, ttl)
                 except Exception as e:
                     print(f"failed set to cache: {e.__repr__()}")
 
@@ -69,3 +64,14 @@ class AdminsMiddleware(BaseMiddleware):
             in await bot.get_chat_administrators(chat_id)
             if not admin.user.is_bot
         ]
+
+    async def _get_admins_from_cache(self, key: str) -> List[int]:
+        admins = await self.__cache.get(key)
+        return [int(admin) for admin in str(admins).split(";")]
+
+    async def _set_admins_to_cache(self, key: str, data: List[int], ttl: int = 10) -> None:
+        await self.__cache.set(
+            key=key,
+            value=';'.join(list(map(str, data))),
+            expire=ttl,
+        )
