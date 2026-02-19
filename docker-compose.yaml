@@ -5,7 +5,7 @@ services:
     container_name: postgres_container_dummy_bot
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: "${DB_NAME:-postgres}"
+      POSTGRES_DB: "${DB_NAME:-pokak}"
       POSTGRES_USER: "${DB_USER:-postgres}"
       POSTGRES_PASSWORD: "${DB_PASS:-postgres}"
     expose:
@@ -52,7 +52,7 @@ services:
       DB_HOST: database
       DB_USER: "${DB_USER:-postgres}"
       DB_PASS: "${DB_PASS:-postgres}"
-      DB_NAME: "${DB_NAME:-postgres}"
+      DB_NAME: "${DB_NAME:-pokak}"
       REDIS_HOST: redis
     ports:
       - "443:443"
