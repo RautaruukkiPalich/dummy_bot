@@ -4,7 +4,6 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.internal.dto.dto import StatisticFilterDTO, TelegramMessageDTO
 from dummy_bot.internal.dto.enums import StatisticEnum
@@ -36,28 +35,28 @@ class CommandsRouter:
 
         @self.__admin_router.message(Command(commands=["start"]))
         @enriched_logger(self.__logger, class_name)
-        async def start(message: Message, admins: List[int], session: AsyncSession) -> None:
+        async def start(message: Message, admins: List[int]) -> None:
             if message.from_user.id not in admins:
                 await message.reply("только пользователи с ролью администратора могут использовать эту команду")
                 return
 
             dto = TelegramMessageDTO.from_message(message)
 
-            await self.__commands_use_case.start(session, dto)
+            await self.__commands_use_case.start(dto)
             await message.reply("приветствую")
 
         @self.__router.message(Command(commands=["join"]))
         @enriched_logger(self.__logger, class_name)
-        async def join(message: Message, session: AsyncSession) -> None:
+        async def join(message: Message) -> None:
             dto = TelegramMessageDTO.from_message(message)
-            await self.__commands_use_case.join(session, dto)
+            await self.__commands_use_case.join(dto)
             await message.reply(f"{dto.username or dto.fullname} присоединяется")
 
         @self.__router.message(Command(commands=["leave"]))
         @enriched_logger(self.__logger, class_name)
-        async def leave(message: Message, session: AsyncSession) -> None:
+        async def leave(message: Message) -> None:
             dto = TelegramMessageDTO.from_message(message)
-            await self.__commands_use_case.leave(session, dto)
+            await self.__commands_use_case.leave(dto)
             await message.reply(f"{dto.username or dto.fullname} покидает нас")
 
         @self.__router.message(Command(commands=[
@@ -67,7 +66,7 @@ class CommandsRouter:
             StatisticEnum.ALL.value,
         ]))
         @enriched_logger(self.__logger, class_name)
-        async def statistics(message: Message, session: AsyncSession) -> None:
+        async def statistics(message: Message) -> None:
             dto = TelegramMessageDTO.from_message(message)
 
             command = dto.text[1:].split("@")[0]
@@ -75,7 +74,7 @@ class CommandsRouter:
 
             f = StatisticFilterDTO(*period.get_date_scope())
 
-            stat = await self.__stat_use_case.statistics(session, dto, f)
+            stat = await self.__stat_use_case.statistics(dto, f)
             report = ReportStat(period, stat.data, f.limit).prepare()
             await message.reply(report)
 

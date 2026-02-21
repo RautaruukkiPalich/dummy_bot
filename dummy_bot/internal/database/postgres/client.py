@@ -17,7 +17,8 @@ class PostgresClient:
         self.__sessionmaker: Optional[async_sessionmaker] = None
         self.__register_engine()
 
-    def get_sessionmaker(self) -> async_sessionmaker:
+    @property
+    def sessionmaker(self) -> async_sessionmaker:
         if self.__sessionmaker is None:
             self.__sessionmaker = async_sessionmaker(
                 bind=self.__engine,

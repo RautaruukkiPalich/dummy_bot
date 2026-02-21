@@ -13,15 +13,20 @@ class GroupRepository:
         res = await session.execute(stmt)
         return res.scalar_one_or_none()
 
+    async def save(self, session: AsyncSession, group: Group) -> Group:
+        if group.id:
+            return await self.update(session, group)
+        return await self.insert(session, group)
+
     @staticmethod
-    async def insert(session: AsyncSession, group: Group) -> Group|None:
+    async def insert(session: AsyncSession, group: Group) -> Group:
         session.add(group)
         await session.flush()
         await session.refresh(group)
         return group
 
     @staticmethod
-    async def update(session: AsyncSession, group: Group) -> Group|None:
+    async def update(session: AsyncSession, group: Group) -> Group:
         group = await session.merge(group)
         await session.flush()
         await session.refresh(group)

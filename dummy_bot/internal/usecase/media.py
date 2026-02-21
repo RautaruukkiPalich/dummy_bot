@@ -1,9 +1,8 @@
-from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.internal.dto.dto import TelegramMessageDTO
-from dummy_bot.internal.models.models import Media
-from dummy_bot.internal.usecase.interfaces import IGroupRepo, IUOW, IMediaRepo
+from dummy_bot.internal.models.models import Media, Group
+from dummy_bot.internal.usecase.interfaces import IGroupRepo, IMediaRepo, IUOWFactory, T_UOW
 
 
 class MediaUseCase:
@@ -11,29 +10,31 @@ class MediaUseCase:
             self,
             group_repo: IGroupRepo,
             media_repo: IMediaRepo,
-            uow: IUOW,
+            uow_factory: IUOWFactory[T_UOW],
     ) -> None:
         self._group_repo: IGroupRepo = group_repo
         self._media_repo: IMediaRepo = media_repo
-        self._uow: IUOW = uow
+        self._uow_factory: IUOWFactory[T_UOW] = uow_factory
 
-    async def set_media(self, session: AsyncSession, dto: TelegramMessageDTO) -> None:
-        async with self._uow.with_tx(session):
-            if not dto.media_file_unique_id: raise
+    async def set_media(self, dto: TelegramMessageDTO) -> None:
+        async with self._uow_factory() as uow:
+            async with uow.with_tx() as session:
+                if not dto.media_file_unique_id: raise
 
-            group = await self._group_repo.get_by_chat_id(session, dto.chat_id)
-            if not group: raise
+                group = await self._get_group_strict(session, dto.chat_id)
 
-            media = await self._media_repo.get_by_group(session, group)
-            if not media:
-                await self._insert_media(session, Media(group_id=group.id, media_unique_id=dto.media_file_unique_id))
-                return
+                media = await self._media_repo.get_by_group(session, group)
+                if not media:
+                    media = Media(
+                        group_id=group.id,
+                    )
 
-            media.media_unique_id = dto.media_file_unique_id
-            await self._update_media(session, media)
+                media.media_unique_id = dto.media_file_unique_id
 
-    async def _insert_media(self, session: AsyncSession, media: Media) -> None:
-        await self._media_repo.insert(session, media)
+                await self._media_repo.save(session, media)
 
-    async def _update_media(self, session: AsyncSession, media: Media) -> None:
-        await self._media_repo.update(session, media)
+
+    async def _get_group_strict(self, session: AsyncSession, chat_id: int) -> Group:
+        group = await self._group_repo.get_by_chat_id(session, chat_id)
+        if not group: raise Exception()
+        return group

@@ -17,6 +17,11 @@ class MediaRepository:
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def save(self, session: AsyncSession, media: Media) -> Media:
+        if media.id:
+            return await self.update(session, media)
+        return await self.insert(session, media)
+
     @staticmethod
     async def insert(session: AsyncSession, media: Media) -> Media:
         session.add(media)

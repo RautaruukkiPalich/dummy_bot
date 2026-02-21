@@ -2,7 +2,6 @@ from typing import List
 
 from aiogram import Router, Bot, F
 from aiogram.types import Message, ReactionTypeEmoji, ChatPermissions
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.internal.dto.dto import TelegramMessageDTO
 from dummy_bot.internal.presentation.decorators import enriched_logger
@@ -63,9 +62,9 @@ class TextRouter:
 
         @self._router.message(F.entities.func(lambda entities: not entities))
         @enriched_logger(self._logger, class_name)
-        async def handle_text(message: Message, session: AsyncSession) -> None:
+        async def handle_text(message: Message) -> None:
             if message.animation or message.sticker:
                 dto = TelegramMessageDTO.from_message(message)
-                if await self._pokak_use_case.add(session, dto):
+                if await self._pokak_use_case.add(dto):
                     await message.react([ReactionTypeEmoji(emoji="👌")])
                     return
