@@ -11,10 +11,9 @@ from dummy_bot.config.config import AppConfig
 
 from dummy_bot.internal.database.postgres.client import PostgresClient
 from dummy_bot.internal.database.redis.client import RedisClient
-from dummy_bot.internal.database.transactional.uow import UOW
+from dummy_bot.internal.database.uow.uow import UOWFactory
 from dummy_bot.internal.logger.logger import Logger, JSONCustomFormatter
 from dummy_bot.internal.middleware.admins_mw import AdminsMiddleware
-from dummy_bot.internal.middleware.session_mw import DBSessionMiddleware
 from dummy_bot.internal.presentation.commands import CommandsRouter
 from dummy_bot.internal.presentation.states import StatesRouter
 from dummy_bot.internal.presentation.text import TextRouter
@@ -94,26 +93,26 @@ class App:
         )
 
     def _init_uow(self):
-        self.uow = UOW()
+        self.uow_factory = UOWFactory(self.database.sessionmaker)
 
     def _init_use_cases(self):
         self.uc = UseCases(
             commands=CommandsUseCase(
                 group_repo=self.repositories.group,
                 user_repo=self.repositories.user,
-                uow=self.uow,
+                uow_factory=self.uow_factory.provider,
             ),
 
             statistics=StatisticsUseCase(
                 group_repo=self.repositories.group,
                 stat_repo=self.repositories.statistics,
-                uow=self.uow,
+                uow_factory=self.uow_factory.provider,
             ),
 
             media=MediaUseCase(
                 group_repo=self.repositories.group,
                 media_repo=self.repositories.media,
-                uow=self.uow,
+                uow_factory=self.uow_factory.provider,
             ),
 
             pokak=PokakUseCase(
@@ -121,7 +120,7 @@ class App:
                 group_repo=self.repositories.group,
                 media_repo=self.repositories.media,
                 pokak_repo=self.repositories.pokak,
-                uow=self.uow,
+                uow_factory=self.uow_factory.provider,
             ),
             mute=MuteUseCase(self.logger),
         )
@@ -152,10 +151,6 @@ class App:
 
     def _init_dispatcher(self):
         self.dp = Dispatcher()
-
-        self.dp.update.middleware(
-            DBSessionMiddleware(session_pool=self.database.get_sessionmaker()),
-        )
 
         self.dp.callback_query.middleware(
             CallbackAnswerMiddleware(),

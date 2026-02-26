@@ -18,15 +18,20 @@ class UserRepository:
         res = await session.execute(stmt)
         return res.scalar_one_or_none()
 
+    async def save(self, session: AsyncSession, user: User) -> User:
+        if user.id:
+            return await self.update(session, user)
+        return await self.insert(session, user)
+
     @staticmethod
-    async def insert(session: AsyncSession, user: User) -> User|None:
+    async def insert(session: AsyncSession, user: User) -> User:
         session.add(user)
         await session.flush()
         await session.refresh(user)
         return user
 
     @staticmethod
-    async def update(session: AsyncSession, user: User) -> User|None:
+    async def update(session: AsyncSession, user: User) -> User:
         user = await session.merge(user)
         await session.flush()
         await session.refresh(user)

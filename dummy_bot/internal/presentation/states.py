@@ -3,7 +3,6 @@ from typing import List
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.internal.dto.dto import TelegramMessageDTO
 from dummy_bot.internal.fsm.fsm import SetMedia
@@ -33,7 +32,6 @@ class StatesRouter:
         @enriched_logger(self.__logger, class_name)
         async def callback_set_media(
                 message: Message,
-                session: AsyncSession,
                 admins: List[int],
                 state: FSMContext,
         ) -> None:
@@ -45,7 +43,7 @@ class StatesRouter:
 
             dto = TelegramMessageDTO.from_message(message)
 
-            await self.__media_use_case.set_media(session, dto)
+            await self.__media_use_case.set_media(dto)
 
             await state.clear()
             await message.reply(text=f'Успешно: отправляй его, когда покакаешь')

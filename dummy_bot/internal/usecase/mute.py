@@ -6,7 +6,8 @@ class MuteUseCase:
     def __init__(self, logger):
         self._logger = logger
 
-    async def mute(self, dto: TelegramMessageDTO) -> MuteResponseDTO|None:
+    @staticmethod
+    async def mute(dto: TelegramMessageDTO) -> MuteResponseDTO|None:
         _, dur, *reason = dto.text.split(" ")
         delta = TimeParser.parse_str_to_duration(dur)
         if not delta:
