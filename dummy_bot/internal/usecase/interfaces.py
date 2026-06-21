@@ -4,7 +4,7 @@ from typing import Protocol, List, TypeVar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dummy_bot.internal.models.models import User, Group, Media, Pokak
-from dummy_bot.internal.dto.dto import StatisticFilterDTO, UserStatInfoDTO
+from dummy_bot.internal.dto.dto import StatisticFilterDTO, UserStatInfoDTO, PeriodStats
 
 
 class IUserRepo(Protocol):
@@ -21,7 +21,9 @@ class IGroupRepo(Protocol):
 
 
 class IStatisticsRepo(Protocol):
-    async def statistics(self, session: AsyncSession, group: Group, f: StatisticFilterDTO) -> List[UserStatInfoDTO]: ...
+    async def group_count_stat(self, session: AsyncSession, group: Group, f: StatisticFilterDTO) -> List[UserStatInfoDTO]: ...
+
+    async def group_daily_count_stat(self, session: AsyncSession, group: Group, f: StatisticFilterDTO) -> PeriodStats: ...
 
 
 class IMediaRepo(Protocol):

@@ -1,12 +1,13 @@
+import datetime
 from typing import List
 
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, BufferedInputFile
 
 from dummy_bot.internal.dto.dto import StatisticFilterDTO, TelegramMessageDTO
-from dummy_bot.internal.dto.enums import StatisticEnum
+from dummy_bot.internal.dto.enums import StatisticEnum, GraphEnum
 from dummy_bot.internal.fsm.fsm import SetMedia
 from dummy_bot.internal.utils.stat_flter import PeriodEnum
 from dummy_bot.internal.presentation.decorators import enriched_logger
@@ -70,7 +71,7 @@ class CommandsRouter:
             dto = TelegramMessageDTO.from_message(message)
 
             command = dto.text[1:].split("@")[0]
-            period = PeriodEnum.from_command(command)
+            period = PeriodEnum.from_stat_command(command)
 
             f = StatisticFilterDTO(*period.get_date_scope())
 
@@ -87,3 +88,30 @@ class CommandsRouter:
 
             await state.set_state(SetMedia.get_media)
             await message.reply(text=f'Отправь мне гифку или стикер, которая будет обозначать успешный покак')
+
+        @self.__router.message(Command(commands=[
+            GraphEnum.WEEK.value,
+            GraphEnum.MONTH.value,
+            GraphEnum.YEAR.value,
+            GraphEnum.ALL.value,
+        ]))
+        @enriched_logger(self.__logger, class_name)
+        async def graph(message: Message) -> None:
+            dto = TelegramMessageDTO.from_message(message)
+
+            command = dto.text[1:].split("@")[0]
+            period = PeriodEnum.from_graph_command(command)
+
+            f = StatisticFilterDTO(*period.get_date_scope())
+
+            buf = await self.__stat_use_case.graph(dto, f)
+            if not buf:
+                return
+
+            try:
+                await message.answer_photo(
+                    photo=BufferedInputFile(
+                        buf.getvalue(),
+                        filename=f"graph-{dto.chat_id}-{f.start_date}-{f.end_date}-{datetime.datetime.now()}.webp"))
+            finally:
+                buf.close()

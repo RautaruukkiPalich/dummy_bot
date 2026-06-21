@@ -12,7 +12,7 @@ services:
       - "5432"
     restart: always
     volumes:
-      - postgres:/data/postgres
+      - ./volumes/postgresql/data:/var/lib/postgresql/data
     networks:
       - postgres
 

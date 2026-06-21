@@ -3,7 +3,7 @@ from enum import Enum
 from datetime import datetime as dt, timedelta as td
 from typing import Tuple
 
-from dummy_bot.internal.dto.enums import StatisticEnum
+from dummy_bot.internal.dto.enums import StatisticEnum, GraphEnum
 
 
 class PeriodEnum(Enum):
@@ -17,7 +17,7 @@ class PeriodEnum(Enum):
         return cls(period)
 
     @classmethod
-    def from_command(cls, command: str) -> "PeriodEnum":
+    def from_stat_command(cls, command: str) -> "PeriodEnum":
         cmd_map = {
             StatisticEnum.WEEK.value: cls.WEEK,
             StatisticEnum.MONTH.value: cls.MONTH,
@@ -26,7 +26,20 @@ class PeriodEnum(Enum):
         }
 
         if command not in cmd_map:
-            raise ValueError(f"Unknown command: {command}")
+            raise ValueError(f"Unknown stat command: {command}")
+        return cmd_map[command]
+
+    @classmethod
+    def from_graph_command(cls, command: str) -> "PeriodEnum":
+        cmd_map = {
+            GraphEnum.WEEK.value: cls.WEEK,
+            GraphEnum.MONTH.value: cls.MONTH,
+            GraphEnum.YEAR.value: cls.YEAR,
+            GraphEnum.ALL.value: cls.ALL,
+        }
+
+        if command not in cmd_map:
+            raise ValueError(f"Unknown graph command: {command}")
         return cmd_map[command]
 
     def get_date_scope(self) -> Tuple[dt, dt]:
@@ -34,7 +47,7 @@ class PeriodEnum(Enum):
 
         match self:
             case PeriodEnum.ALL:
-                return dt(1970, 1, 1), now
+                return dt(2020, 1, 1), now
 
             case PeriodEnum.YEAR:
                 return (dt(now.year, 1, 1),
