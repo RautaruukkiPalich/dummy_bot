@@ -1,4 +1,5 @@
-from typing import Protocol
+from io import BytesIO
+from typing import Protocol, Dict
 
 from dummy_bot.internal.dto.dto import StatisticFilterDTO, StatisticResponseDTO, MuteResponseDTO, TelegramMessageDTO
 
@@ -13,6 +14,8 @@ class ICommandUseCase(Protocol):
 
 class IStatisticsUseCase(Protocol):
     async def statistics(self, dto: TelegramMessageDTO, stat_filter: StatisticFilterDTO) -> StatisticResponseDTO: ...
+
+    async def graph(self, dto: TelegramMessageDTO, stat_filter: StatisticFilterDTO) -> BytesIO | None:  ...
 
 
 class IMediaUseCase(Protocol):

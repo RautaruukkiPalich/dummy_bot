@@ -5,3 +5,9 @@ class StatisticEnum(Enum):
     MONTH = "pokakstatmonth"
     YEAR = "pokakstatyear"
     ALL = "pokakstatall"
+
+class GraphEnum(Enum):
+    WEEK = "pokakgraphweek"
+    MONTH = "pokakgraphmonth"
+    YEAR = "pokakgraphyear"
+    ALL = "pokakgraphall"
