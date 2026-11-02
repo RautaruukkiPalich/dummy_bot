@@ -66,5 +66,9 @@ class TextRouter:
             if message.animation or message.sticker:
                 dto = TelegramMessageDTO.from_message(message)
                 if await self._pokak_use_case.add(dto):
-                    await message.react([ReactionTypeEmoji(emoji="👌")])
+                    # await message.react([ReactionTypeEmoji(emoji="👌")])
+                    try:
+                        await message.react([ReactionTypeEmoji(emoji="👌")])
+                    except Exception as ex:
+                        print(ex)
                     return
